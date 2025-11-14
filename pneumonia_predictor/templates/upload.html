@@ -1,0 +1,558 @@
+{% extends "base.html" %}
+{% block title %}Predict — Pneumonia Detector{% endblock %}
+
+{% block extra_head %}
+<style>
+  .upload-container {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 32px;
+    align-items: start;
+  }
+
+  .upload-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .section-header {
+    margin-bottom: 8px;
+  }
+
+  .section-header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    background: var(--bg-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .section-header p {
+    color: var(--text-secondary);
+    font-size: 16px;
+  }
+
+  .dropzone {
+    border: 3px dashed var(--border);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border-radius: var(--radius-lg);
+    padding: 48px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dropzone::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+  }
+
+  .dropzone:hover::before {
+    left: 100%;
+  }
+
+  .dropzone:hover {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .dropzone.dragover {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    transform: scale(1.02);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .dropzone-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius);
+    background: var(--bg-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .dropzone-text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dropzone-text strong {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .dropzone-text span {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .file-input {
+    display: none;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .preview-container {
+    margin-top: 24px;
+    display: none;
+  }
+
+  .preview-container.show {
+    display: block;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .preview-image {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--border);
+    background: var(--bg-secondary);
+  }
+
+  .result-section {
+    position: sticky;
+    top: 100px;
+  }
+
+  .result-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border);
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .result-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius);
+    background: var(--bg-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+
+  .result-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .result-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .prediction-result {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .prediction-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 18px;
+    width: fit-content;
+  }
+
+  .prediction-label.normal {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+    color: var(--success);
+    border: 2px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .prediction-label.pneumonia {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+    color: var(--danger);
+    border: 2px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .confidence-meter {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .confidence-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .confidence-bar-container {
+    width: 100%;
+    height: 12px;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .confidence-bar {
+    height: 100%;
+    background: var(--bg-gradient);
+    border-radius: 6px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .confidence-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  .confidence-value {
+    font-size: 32px;
+    font-weight: 800;
+    background: var(--bg-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-top: 8px;
+  }
+
+  .info-box {
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 24px;
+    border-left: 4px solid var(--primary);
+  }
+
+  .info-box-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .info-box-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .empty-state-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius);
+    background: var(--bg-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  }
+
+  .empty-state-text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .empty-state-text strong {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .empty-state-text span {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 968px) {
+    .upload-container {
+      grid-template-columns: 1fr;
+    }
+
+    .result-section {
+      position: relative;
+      top: 0;
+    }
+
+    .section-header h1 {
+      font-size: 24px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+  <section class="upload-section">
+    <div class="section-header">
+      <h1>Upload Chest X-ray</h1>
+      <p>Upload a chest X-ray image to analyze for pneumonia detection</p>
+    </div>
+
+    <form id="uploadForm" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      
+      <label for="fileInput" class="dropzone" id="dropzone" tabindex="0">
+        <input id="fileInput" name="image" type="file" accept="image/*" class="file-input" required>
+        <div class="dropzone-icon">📤</div>
+        <div class="dropzone-text">
+          <strong>Click or drag X-ray image here</strong>
+          <span>Supports PNG, JPG, JPEG formats • Best results with frontal chest X-rays</span>
+        </div>
+      </label>
+
+      <div class="actions">
+        <button id="submitBtn" type="submit" class="btn-primary" disabled>
+          <span>🔍 Analyze Image</span>
+        </button>
+        <label for="fileInput" class="btn-secondary" style="cursor: pointer; text-align: center; display: inline-block;">
+          Choose File
+        </label>
+        {% if image_url %}
+          <a class="btn-secondary" href="{{ image_url }}" target="_blank" style="text-decoration: none;">
+            View Last Upload
+          </a>
+        {% endif %}
+      </div>
+
+      <div class="preview-container" id="previewContainer">
+        <img id="previewImg" src="" alt="Preview" class="preview-image">
+      </div>
+    </form>
+  </section>
+
+  <aside class="result-section">
+    <div class="result-card">
+      {% if result %}
+        <div class="result-header">
+          <div class="result-icon">🎯</div>
+          <div>
+            <div class="result-title">Prediction Result</div>
+            <div class="result-subtitle">AI Model Analysis</div>
+          </div>
+        </div>
+
+        <div class="prediction-result">
+          <div>
+            <div class="prediction-label {% if result.label == 'Normal' %}normal{% else %}pneumonia{% endif %}">
+              {% if result.label == 'Normal' %}
+                ✓ Normal
+              {% else %}
+                ⚠ Pneumonia Detected
+              {% endif %}
+            </div>
+            <p style="margin-top: 12px; font-size: 14px; color: var(--text-secondary);">
+              Model confidence: <strong>{{ result.probability|floatformat:2 }}</strong>
+              <br>
+              <small>(0 = Pneumonia, 1 = Normal)</small>
+            </p>
+          </div>
+
+          <div class="confidence-meter">
+            <div class="confidence-label">
+              <span>Confidence Level</span>
+              <span id="confidencePercent">{{ result.probability|floatformat:0 }}%</span>
+            </div>
+            <div class="confidence-bar-container">
+              <div class="confidence-bar" id="confidenceBar" style="width: {{ result.probability|floatformat:0 }}%"></div>
+            </div>
+            <div class="confidence-value">{{ result.probability|floatformat:2 }}</div>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <div class="info-box-title">⚠️ Important Notice</div>
+          <div class="info-box-text">
+            This tool is for educational and research purposes only. 
+            It is not a medical device and should not be used for clinical diagnosis. 
+            Always consult with qualified healthcare professionals for medical advice.
+          </div>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon">⚡</div>
+          <div class="empty-state-text">
+            <strong>Ready to Analyze</strong>
+            <span>Upload a chest X-ray image and click "Analyze Image" to get started with AI-powered pneumonia detection.</span>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const dropzone = document.getElementById('dropzone');
+  const previewImg = document.getElementById('previewImg');
+  const previewContainer = document.getElementById('previewContainer');
+  const submitBtn = document.getElementById('submitBtn');
+  const confidenceBar = document.getElementById('confidenceBar');
+  const confidencePercent = document.getElementById('confidencePercent');
+
+  function showPreview(file) {
+    if (!file) {
+      previewContainer.classList.remove('show');
+      previewImg.src = '';
+      submitBtn.disabled = true;
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      previewImg.src = e.target.result;
+      previewContainer.classList.add('show');
+      submitBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  fileInput.addEventListener('change', (e) => {
+    showPreview(e.target.files[0]);
+  });
+
+  // Drag and drop functionality
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, () => {
+      dropzone.classList.add('dragover');
+    }, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, () => {
+      dropzone.classList.remove('dragover');
+    }, false);
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files && files[0]) {
+      fileInput.files = files;
+      showPreview(files[0]);
+    }
+  }, false);
+
+  // Animate confidence bar on page load
+  document.addEventListener('DOMContentLoaded', () => {
+    {% if result %}
+      const probability = {{ result.probability }};
+      const percentage = Math.round(probability * 100);
+      
+      if (confidenceBar) {
+        setTimeout(() => {
+          confidenceBar.style.width = percentage + '%';
+        }, 100);
+      }
+      
+      if (confidencePercent) {
+        confidencePercent.textContent = percentage + '%';
+      }
+    {% endif %}
+  });
+
+  // Form submission loading state
+  document.getElementById('uploadForm').addEventListener('submit', function() {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>⏳ Processing...</span>';
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+graph TB
+    subgraph "User Layer"
+        User[User/Clinician<br/>Web Browser]
+    end
+    
+    subgraph "Frontend Layer"
+        Frontend[Django Templates<br/>HTML/CSS/JavaScript<br/>• Login/Signup Pages<br/>• Image Upload Interface<br/>• Results Display<br/>• Dashboard View]
+    end
+    
+    subgraph "Backend Layer"
+        Backend[Django Framework<br/>• Views<br/>• Forms<br/>• URL Routing<br/>• Authentication]
+    end
+    
+    subgraph "ML Processing Layer"
+        ML[TensorFlow/Keras<br/>CNN Model<br/>• Image Preprocessing<br/>• Model Inference<br/>• Probability Calculation]
+    end
+    
+    subgraph "Data Storage Layer"
+        DB[(SQLite Database<br/>Predictions Table)]
+        Media[Media Storage<br/>X-ray Images]
+    end
+    
+    User -->|HTTP Request| Frontend
+    Frontend -->|Form Submission| Backend
+    Backend -->|Image Processing| ML
+    ML -->|Prediction Results| Backend
+    Backend -->|Save Data| DB
+    Backend -->|Save Files| Media
+    Backend -->|Render Response| Frontend
+    Frontend -->|Display Results| User
+    
+    style User fill:#ffeb3b
+    style Frontend fill:#e3f2fd
+    style Backend fill:#c8e6c9
+    style ML fill:#fff9c4
+    style DB fill:#f8bbd0
+    style Media fill:#f8bbd0
+

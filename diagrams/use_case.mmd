@@ -1,0 +1,36 @@
+graph LR
+    subgraph "Pneumonia Prediction System"
+        UC1[Register Account]
+        UC2[Login]
+        UC3[Upload X-ray Image]
+        UC4[View Prediction Results]
+        UC5[View Dashboard]
+        UC6[Manage Users]
+        UC7[View All Predictions]
+        UC8[System Monitoring]
+        UC9[Access Admin Panel]
+    end
+    
+    Clinician[Clinician<br/>Primary User] --> UC1
+    Clinician --> UC2
+    Clinician --> UC3
+    Clinician --> UC4
+    Clinician --> UC5
+    
+    Admin[Admin<br/>System Administrator] --> UC6
+    Admin --> UC7
+    Admin --> UC8
+    Admin --> UC9
+    
+    style Clinician fill:#e3f2fd
+    style Admin fill:#c8e6c9
+    style UC1 fill:#fff9c4
+    style UC2 fill:#fff9c4
+    style UC3 fill:#fff9c4
+    style UC4 fill:#fff9c4
+    style UC5 fill:#fff9c4
+    style UC6 fill:#f8bbd0
+    style UC7 fill:#f8bbd0
+    style UC8 fill:#f8bbd0
+    style UC9 fill:#f8bbd0
+

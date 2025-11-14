@@ -1,0 +1,85 @@
+# .gitignore for a Django / Python project (includes common IDE, OS, venv, media, model files)
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Installer files
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+nose2.xml
+coverage.xml
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Media / uploads and collected static
+media/
+Media/
+uploads/
+staticfiles/
+static_root/
+collectstatic/
+
+# Model files and large binaries (don't commit large model files)
+*.h5
+**/models/*.h5
+saved_model.pb
+saved_model/
+*.tflite
+
+# Secrets / env
+.env
+.env.*
+secrets.json
+
+# IDEs / editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+*.pyc
+*.pyo
+*.pyd
+*.swp
+*.pid
+*.seed
+*.backup
+
+# OneDrive temp/conflict files
+~$*
+.~*
+
+# Jupyter
+.ipynb_checkpoints/

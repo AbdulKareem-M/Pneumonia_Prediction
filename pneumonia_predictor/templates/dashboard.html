@@ -1,0 +1,533 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Pneumonia Detector{% endblock %}
+
+{% block extra_head %}
+<style>
+  .dashboard-header {
+    margin-bottom: 32px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    background: var(--bg-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .dashboard-header p {
+    color: var(--text-secondary);
+    font-size: 16px;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--bg-gradient);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  .stat-card.total::before {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .stat-card.pneumonia::before {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
+
+  .stat-card.normal::before {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+
+  .stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .stat-card.total .stat-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .stat-card.pneumonia .stat-icon {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
+
+  .stat-card.normal .stat-icon {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-value {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-top: 8px;
+  }
+
+  .stat-change {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .recent-predictions {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: var(--bg-gradient);
+    border-radius: 2px;
+  }
+
+  .predictions-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .predictions-table thead {
+    background: var(--bg-secondary);
+  }
+
+  .predictions-table th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .predictions-table th:first-child {
+    border-top-left-radius: var(--radius-sm);
+  }
+
+  .predictions-table th:last-child {
+    border-top-right-radius: var(--radius-sm);
+  }
+
+  .predictions-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .predictions-table tbody tr {
+    transition: var(--transition);
+  }
+
+  .predictions-table tbody tr:hover {
+    background: var(--bg-secondary);
+    transform: scale(1.01);
+  }
+
+  .predictions-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .image-thumbnail {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+  }
+
+  .image-thumbnail:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+  }
+
+  .label-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 13px;
+    width: fit-content;
+  }
+
+  .label-badge.normal {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .label-badge.pneumonia {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .probability-cell {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-primary);
+  }
+
+  .date-cell {
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  .user-cell {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+  }
+
+  .empty-state-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  .empty-state-text {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+  }
+
+  .empty-state-subtext {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .info-sidebar {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    position: sticky;
+    top: 100px;
+  }
+
+  .info-item {
+    margin-bottom: 24px;
+  }
+
+  .info-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .info-item-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .info-item-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .info-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  .tip-box {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border-radius: var(--radius);
+    padding: 16px;
+    border-left: 4px solid var(--primary);
+    margin-top: 20px;
+  }
+
+  .tip-box-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .tip-box-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 968px) {
+    .dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .info-sidebar {
+      position: relative;
+      top: 0;
+    }
+
+    .predictions-table {
+      font-size: 14px;
+    }
+
+    .predictions-table th,
+    .predictions-table td {
+      padding: 12px 8px;
+    }
+
+    .image-thumbnail {
+      width: 60px;
+      height: 60px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .predictions-table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <h1>📊 Dashboard</h1>
+  <p>Overview of all predictions and statistics</p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card total">
+    <div class="stat-header">
+      <div>
+        <div class="stat-label">Total Predictions</div>
+        <div class="stat-value">{{ total }}</div>
+        <div class="stat-change">All time predictions</div>
+      </div>
+      <div class="stat-icon">📈</div>
+    </div>
+  </div>
+
+  <div class="stat-card pneumonia">
+    <div class="stat-header">
+      <div>
+        <div class="stat-label">Pneumonia Cases</div>
+        <div class="stat-value">{{ pneumonia }}</div>
+        <div class="stat-change">
+          {% if total > 0 %}
+            {% widthratio pneumonia total 100 as pneumonia_pct %}
+            {{ pneumonia_pct|floatformat:1 }}% of total
+          {% else %}
+            0% of total
+          {% endif %}
+        </div>
+      </div>
+      <div class="stat-icon">⚠️</div>
+    </div>
+  </div>
+
+  <div class="stat-card normal">
+    <div class="stat-header">
+      <div>
+        <div class="stat-label">Normal Cases</div>
+        <div class="stat-value">{{ normal }}</div>
+        <div class="stat-change">
+          {% if total > 0 %}
+            {% widthratio normal total 100 as normal_pct %}
+            {{ normal_pct|floatformat:1 }}% of total
+          {% else %}
+            0% of total
+          {% endif %}
+        </div>
+      </div>
+      <div class="stat-icon">✓</div>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-grid">
+  <div class="recent-predictions">
+    <h2 class="section-title">Recent Predictions</h2>
+    
+    {% if recent %}
+      <table class="predictions-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Result</th>
+            <th>Confidence</th>
+            <th>Date & Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in recent %}
+          <tr>
+            <td>
+              <a href="{{ p.image_url }}" target="_blank">
+                <img src="{{ p.image_url }}" alt="X-ray image" class="image-thumbnail">
+              </a>
+            </td>
+            <td>
+              <div class="label-badge {% if p.label == 'Normal' %}normal{% else %}pneumonia{% endif %}">
+                {% if p.label == 'Normal' %}
+                  ✓ {{ p.label }}
+                {% else %}
+                  ⚠ {{ p.label }}
+                {% endif %}
+              </div>
+              <div class="user-cell">User: {{ p.user.username }}</div>
+            </td>
+            <td>
+              <div class="probability-cell">{{ p.probability|floatformat:2 }}</div>
+            </td>
+            <td>
+              <div class="date-cell">{{ p.created_at|date:"M d, Y" }}</div>
+              <div class="date-cell" style="font-size: 12px; color: var(--text-muted);">{{ p.created_at|date:"H:i" }}</div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-text">No predictions yet</div>
+        <div class="empty-state-subtext">Upload an X-ray image to get started with predictions.</div>
+      </div>
+    {% endif %}
+  </div>
+
+  <aside class="info-sidebar">
+    <div class="info-item">
+      <div class="info-item-title">💡 About This Dashboard</div>
+      <div class="info-item-text">
+        This dashboard displays all predictions made using the pneumonia detection model. 
+        Statistics are calculated from all predictions stored in the system.
+      </div>
+    </div>
+
+    <div class="info-divider"></div>
+
+    <div class="info-item">
+      <div class="info-item-title">📋 Statistics</div>
+      <div class="info-item-text">
+        <strong>Total Predictions:</strong> {{ total }}<br>
+        <strong>Pneumonia Detected:</strong> {{ pneumonia }}<br>
+        <strong>Normal Cases:</strong> {{ normal }}
+      </div>
+    </div>
+
+    <div class="info-divider"></div>
+
+    <div class="info-item">
+      <div class="info-item-title">🔒 Privacy</div>
+      <div class="info-item-text">
+        All predictions are linked to user accounts. Only you can see your own prediction history.
+      </div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-box-title">⚠️ Important Notice</div>
+      <div class="tip-box-text">
+        This tool is for educational purposes only and should not be used for clinical diagnosis. 
+        Always consult healthcare professionals for medical advice.
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+</html>
+</html>
+</html>

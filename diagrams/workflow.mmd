@@ -1,0 +1,39 @@
+flowchart TD
+    Start([Start: User Access]) --> Login{User Logged In?}
+    Login -->|No| Register[Register/Login]
+    Register --> Login
+    Login -->|Yes| Upload[Navigate to Upload Page]
+    
+    Upload --> Select[Select & Upload X-ray Image]
+    Select --> Validate{Image Valid?}
+    Validate -->|No| Upload
+    Validate -->|Yes| SaveFile[Save Image to Media Storage]
+    
+    SaveFile --> Preprocess[Image Preprocessing<br/>• Load image<br/>• Resize to 224x224<br/>• Convert to array<br/>• Add batch dimension<br/>• Normalize /255.0]
+    
+    Preprocess --> LoadModel[Load Trained CNN Model<br/>pneumonia_model.h5]
+    LoadModel --> Inference[Model Inference<br/>Forward pass through CNN]
+    
+    Inference --> ExtractProb[Extract Probability Value<br/>0.0 to 1.0]
+    ExtractProb --> Decision{Probability > 0.5?}
+    
+    Decision -->|Yes| Normal[Label: Normal]
+    Decision -->|No| Pneumonia[Label: Pneumonia]
+    
+    Normal --> SaveDB[Save Prediction to Database<br/>• User<br/>• Image name<br/>• Label<br/>• Probability]
+    Pneumonia --> SaveDB
+    
+    SaveDB --> Display[Display Results to User<br/>• Uploaded image<br/>• Predicted label<br/>• Confidence probability]
+    
+    Display --> Dashboard[Update Dashboard Statistics<br/>• Total predictions<br/>• Pneumonia count<br/>• Normal count<br/>• Recent predictions]
+    
+    Dashboard --> End([End: User Reviews Results])
+    
+    style Start fill:#e3f2fd
+    style End fill:#e3f2fd
+    style Normal fill:#c8e6c9
+    style Pneumonia fill:#ffccbc
+    style Decision fill:#fff9c4
+    style Validate fill:#fff9c4
+    style Login fill:#fff9c4
+

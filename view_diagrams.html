@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pneumonia Prediction Project - Diagrams</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #2563eb;
+            margin-bottom: 30px;
+        }
+        .diagram-container {
+            background: white;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #1e40af;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .mermaid {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pneumonia Prediction Project - System Diagrams</h1>
+    
+    <div class="instructions">
+        <strong>Instructions:</strong> These diagrams are interactive. You can view them directly in this browser, 
+        or copy the Mermaid code to <a href="https://mermaid.live" target="_blank">mermaid.live</a> for editing.
+        To export as images, use the export feature in mermaid.live or take screenshots.
+    </div>
+
+    <div class="diagram-container">
+        <h2>1. System Architecture Diagram</h2>
+        <div class="mermaid">
+graph TB
+    subgraph "User Layer"
+        User[User/Clinician<br/>Web Browser]
+    end
+    
+    subgraph "Frontend Layer"
+        Frontend[Django Templates<br/>HTML/CSS/JavaScript<br/>• Login/Signup Pages<br/>• Image Upload Interface<br/>• Results Display<br/>• Dashboard View]
+    end
+    
+    subgraph "Backend Layer"
+        Backend[Django Framework<br/>• Views<br/>• Forms<br/>• URL Routing<br/>• Authentication]
+    end
+    
+    subgraph "ML Processing Layer"
+        ML[TensorFlow/Keras<br/>CNN Model<br/>• Image Preprocessing<br/>• Model Inference<br/>• Probability Calculation]
+    end
+    
+    subgraph "Data Storage Layer"
+        DB[(SQLite Database<br/>Predictions Table)]
+        Media[Media Storage<br/>X-ray Images]
+    end
+    
+    User -->|HTTP Request| Frontend
+    Frontend -->|Form Submission| Backend
+    Backend -->|Image Processing| ML
+    ML -->|Prediction Results| Backend
+    Backend -->|Save Data| DB
+    Backend -->|Save Files| Media
+    Backend -->|Render Response| Frontend
+    Frontend -->|Display Results| User
+    
+    style User fill:#ffeb3b
+    style Frontend fill:#e3f2fd
+    style Backend fill:#c8e6c9
+    style ML fill:#fff9c4
+    style DB fill:#f8bbd0
+    style Media fill:#f8bbd0
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <h2>2. Use Case Diagram</h2>
+        <div class="mermaid">
+graph LR
+    subgraph "Pneumonia Prediction System"
+        UC1[Register Account]
+        UC2[Login]
+        UC3[Upload X-ray Image]
+        UC4[View Prediction Results]
+        UC5[View Dashboard]
+        UC6[Manage Users]
+        UC7[View All Predictions]
+        UC8[System Monitoring]
+        UC9[Access Admin Panel]
+    end
+    
+    Clinician[Clinician<br/>Primary User] --> UC1
+    Clinician --> UC2
+    Clinician --> UC3
+    Clinician --> UC4
+    Clinician --> UC5
+    
+    Admin[Admin<br/>System Administrator] --> UC6
+    Admin --> UC7
+    Admin --> UC8
+    Admin --> UC9
+    
+    style Clinician fill:#e3f2fd
+    style Admin fill:#c8e6c9
+    style UC1 fill:#fff9c4
+    style UC2 fill:#fff9c4
+    style UC3 fill:#fff9c4
+    style UC4 fill:#fff9c4
+    style UC5 fill:#fff9c4
+    style UC6 fill:#f8bbd0
+    style UC7 fill:#f8bbd0
+    style UC8 fill:#f8bbd0
+    style UC9 fill:#f8bbd0
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <h2>3. Workflow Diagram</h2>
+        <div class="mermaid">
+flowchart TD
+    Start([Start: User Access]) --> Login{User Logged In?}
+    Login -->|No| Register[Register/Login]
+    Register --> Login
+    Login -->|Yes| Upload[Navigate to Upload Page]
+    
+    Upload --> Select[Select & Upload X-ray Image]
+    Select --> Validate{Image Valid?}
+    Validate -->|No| Upload
+    Validate -->|Yes| SaveFile[Save Image to Media Storage]
+    
+    SaveFile --> Preprocess[Image Preprocessing<br/>• Load image<br/>• Resize to 224x224<br/>• Convert to array<br/>• Add batch dimension<br/>• Normalize /255.0]
+    
+    Preprocess --> LoadModel[Load Trained CNN Model<br/>pneumonia_model.h5]
+    LoadModel --> Inference[Model Inference<br/>Forward pass through CNN]
+    
+    Inference --> ExtractProb[Extract Probability Value<br/>0.0 to 1.0]
+    ExtractProb --> Decision{Probability > 0.5?}
+    
+    Decision -->|Yes| Normal[Label: Normal]
+    Decision -->|No| Pneumonia[Label: Pneumonia]
+    
+    Normal --> SaveDB[Save Prediction to Database<br/>• User<br/>• Image name<br/>• Label<br/>• Probability]
+    Pneumonia --> SaveDB
+    
+    SaveDB --> Display[Display Results to User<br/>• Uploaded image<br/>• Predicted label<br/>• Confidence probability]
+    
+    Display --> Dashboard[Update Dashboard Statistics<br/>• Total predictions<br/>• Pneumonia count<br/>• Normal count<br/>• Recent predictions]
+    
+    Dashboard --> End([End: User Reviews Results])
+    
+    style Start fill:#e3f2fd
+    style End fill:#e3f2fd
+    style Normal fill:#c8e6c9
+    style Pneumonia fill:#ffccbc
+    style Decision fill:#fff9c4
+    style Validate fill:#fff9c4
+    style Login fill:#fff9c4
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,41 @@
+<!-- navbar include -->
+<style>
+/* full-width wrapper (no centering here) */
+.site-nav{ width:100%; background:rgba(255,255,255,0.95); backdrop-filter:blur(6px); box-shadow:0 6px 18px rgba(2,6,23,0.04); border-radius:10px; padding:10px 16px; box-sizing:border-box; }
+/* inner container that aligns to the page's max width */
+.site-nav .site-inner{ max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+/* left / right regions */
+.site-nav .left{ display:flex; gap:12px; align-items:center; }
+.site-nav .brand{ display:flex; gap:12px; align-items:center; font-weight:700; color:#0f172a; text-decoration:none; }
+.site-nav .logo{ width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; background:linear-gradient(90deg,#2563eb,#06b6d4); box-shadow:0 6px 18px rgba(37,99,235,0.12); }
+.site-nav .links{ display:flex; gap:10px; align-items:center; }
+.site-nav a.btn{ padding:8px 12px; border-radius:8px; text-decoration:none; color:#2563eb; background:transparent; font-weight:600; }
+.site-nav .cta{ padding:8px 12px; background:#2563eb; color:#fff; border-radius:8px; text-decoration:none; font-weight:700; }
+@media (max-width:680px){ .site-nav .site-inner{ flex-direction:column; align-items:flex-start; gap:8px; } }
+</style>
+
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+  <div class="site-inner">
+    <div class="left">
+      <a href="{% url 'upload_and_predict' %}" class="brand">
+        <span class="logo">PD</span>
+        <span>
+          <div style="line-height:1;">Pneumonia Detector</div>
+          <div style="font-size:12px;color:#6b7280;margin-top:2px;">Chest X‑ray classifier</div>
+        </span>
+      </a>
+    </div>
+
+    <div class="links" role="menu">
+      <a href="{% url 'upload_and_predict' %}" class="btn">Predict</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="btn">Dashboard</a>
+        <a href="{% url 'logout' %}" class="btn">Logout</a>
+        <span style="margin-left:6px;color:#374151;font-weight:600;">{{ user.username }}</span>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn">Login</a>
+        <a href="{% url 'signup' %}" class="cta">Sign up</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
