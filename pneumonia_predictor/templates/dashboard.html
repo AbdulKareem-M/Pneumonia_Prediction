@@ -342,6 +342,67 @@
     line-height: 1.6;
   }
 
+  /* NEW: download / action button styling for dashboard */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #fff;
+    background: linear-gradient(90deg, var(--accent, #2563eb), var(--accent-2, #06b6d4));
+    font-weight: 700;
+    box-shadow: 0 6px 18px rgba(37,99,235,0.12);
+    transition: transform .12s ease, box-shadow .12s ease, opacity .12s;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn.secondary {
+    background: transparent;
+    color: var(--accent, #2563eb);
+    border: 1px solid rgba(37,99,235,0.12);
+    box-shadow: none;
+  }
+
+  .btn.small { padding: 6px 8px; font-size: 13px; }
+
+  /* Action column in table */
+  .predictions-table td.action-cell {
+    width: 170px;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .predictions-table td.action-cell .btn {
+    display: inline-block;
+    width: auto;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(37,99,235,0.14);
+    text-decoration: none;
+  }
+
+  /* Ensure action column remains usable on small screens */
+  @media (max-width: 640px) {
+    .predictions-table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .predictions-table td.action-cell {
+      min-width: 140px;
+    }
+    .predictions-table td.action-cell .btn {
+      width: 120px;
+    }
+  }
+
   @media (max-width: 968px) {
     .dashboard-grid {
       grid-template-columns: 1fr;
@@ -385,6 +446,12 @@
 <div class="dashboard-header">
   <h1>📊 Dashboard</h1>
   <p>Overview of all predictions and statistics</p>
+</div>
+
+<div style="display:flex;gap:8px;align-items:center;">
+  <a href="{% url 'upload_and_predict' %}" class="btn">Predict</a>
+  <a href="{% url 'download_report' %}" class="btn" style="text-decoration:none;">Download PDF Report</a>
+  <a href="{% url 'logout' %}" class="btn">Logout</a>
 </div>
 
 <div class="stats-grid">
@@ -453,29 +520,18 @@
         <tbody>
           {% for p in recent %}
           <tr>
-            <td>
-              <a href="{{ p.image_url }}" target="_blank">
-                <img src="{{ p.image_url }}" alt="X-ray image" class="image-thumbnail">
-              </a>
+            <td style="padding:8px 10px;border-bottom:1px solid #eef6ff;">
+              <a href="{{ p.image_url }}" target="_blank" rel="noopener"><img src="{{ p.image_url }}" alt="" class="thumb"></a>
             </td>
-            <td>
-              <div class="label-badge {% if p.label == 'Normal' %}normal{% else %}pneumonia{% endif %}">
-                {% if p.label == 'Normal' %}
-                  ✓ {{ p.label }}
-                {% else %}
-                  ⚠ {{ p.label }}
-                {% endif %}
-              </div>
-              <div class="user-cell">User: {{ p.user.username }}</div>
-            </td>
-            <td>
-              <div class="probability-cell">{{ p.probability|floatformat:2 }}</div>
-            </td>
-            <td>
-              <div class="date-cell">{{ p.created_at|date:"M d, Y" }}</div>
-              <div class="date-cell" style="font-size: 12px; color: var(--text-muted);">{{ p.created_at|date:"H:i" }}</div>
+            <td style="padding:8px 10px;border-bottom:1px solid #eef6eff;"><strong>{{ p.label }}</strong><div style="color:#6b7280;font-size:13px;">user: {{ p.user.username }}</div></td>
+            <td style="padding:8px 10px;border-bottom:1px solid #eef6ff;font-weight:700;">{{ p.probability|floatformat:2 }}</td>
+            <td style="padding:8px 10px;border-bottom:1px solid #eef6ff;color:#6b7280;">{{ p.created_at|date:"Y-m-d H:i" }}</td>
+            <td style="padding:8px 10px;border-bottom:1px solid #eef6ff;">
+              <a href="{% url 'download_prediction_pdf' p.pk %}" class="btn" style="text-decoration:none;padding:6px 10px;font-size:13px;">Download PDF</a>
             </td>
           </tr>
+          {% empty %}
+          <tr><td colspan="5" style="padding:12px;color:#6b7280;">No predictions yet — upload an X‑ray to get started.</td></tr>
           {% endfor %}
         </tbody>
       </table>

@@ -27,6 +27,8 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('accounts/signup/', views.signup, name='signup'),
     path('accounts/', include('django.contrib.auth.urls')),  # login/logout/password
+    path('reports/download/', views.download_report, name='download_report'),
+    path('reports/<int:pk>/download/', views.download_prediction_pdf, name='download_prediction_pdf'),
 ] 
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

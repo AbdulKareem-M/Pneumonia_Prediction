@@ -1,7 +1,6 @@
 # detector_app/views.py
-import os
 import numpy as np
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 from .forms import UploadImageForm
@@ -12,6 +11,11 @@ from django.contrib.auth import login as auth_login
 from .models import Prediction
 from django.db.models import Count
 from .utils.email_utils import *
+import io
+import os
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from xhtml2pdf import pisa
 
 # Load model once at startup
 MODEL_PATH = os.path.join(settings.BASE_DIR, 'pneumonia_predictor', 'models', 'pneumonia_model.h5')
@@ -47,26 +51,25 @@ def upload_and_predict(request):
             result = predict_pneumonia(img_path)
             image_url = settings.MEDIA_URL + img.name
 
-            # persist prediction for dashboard
+            # collect patient info (optional fields from form)
+            patient_name = request.POST.get("patient_name") or request.user.get_full_name() or request.user.username
+            patient_email = request.POST.get("email") or request.user.email or ''
+
+            # persist prediction for dashboard (now with patient fields)
             try:
                 Prediction.objects.create(
                     user=request.user,
                     image_name=img.name,
+                    patient_name=patient_name,
+                    patient_email=patient_email,
                     label=result['label'],
                     probability=result['probability']
                 )
             except Exception as e:
-                # don't break the request on DB errors; log if needed
                 print("Prediction save failed:", e)
-            
-            
-            # ---------------------------------------
-            # SEND HTML EMAIL USING UTILITY FUNCTION
-            # ---------------------------------------
-            try:
-                patient_name = request.POST.get("patient_name", request.user.username)
-                patient_email = request.POST.get("email", request.user.email)
 
+            # attempt to send email (existing)
+            try:
                 send_prediction_email(
                     patient_name=patient_name,
                     patient_email=patient_email,
@@ -76,12 +79,67 @@ def upload_and_predict(request):
                 print("Email sent successfully!")
             except Exception as e:
                 print("Email sending failed:", e)
-            # ---------------------------------------
-
     else:
         form = UploadImageForm()
 
     return render(request, 'upload.html', {'form': form, 'result': result, 'image_url': image_url})
+
+# new view: download user's predictions as PDF
+@login_required(login_url='login')
+def download_report(request):
+    preds = Prediction.objects.filter(user=request.user).order_by('-created_at')
+    context = {
+        'user': request.user,
+        'predictions': preds,
+    }
+    html = render_to_string('reports/predictions_report.html', context)
+
+    result = io.BytesIO()
+    # Create PDF
+    pisa_status = pisa.CreatePDF(html, dest=result, encoding='utf-8')
+    if pisa_status.err:
+        return HttpResponse('Error generating PDF', status=500)
+
+    response = HttpResponse(result.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="predictions_{request.user.username}.pdf"'
+    return response
+
+def _link_callback(uri, rel):
+    """
+    Convert HTML resource URIs to absolute system paths so xhtml2pdf can access them.
+    Supports MEDIA_URL and STATIC_URL.
+    """
+    if uri.startswith(settings.MEDIA_URL):
+        path = os.path.join(settings.MEDIA_ROOT, uri.replace(settings.MEDIA_URL, ""))
+    elif hasattr(settings, 'STATIC_URL') and uri.startswith(settings.STATIC_URL):
+        path = os.path.join(settings.STATIC_ROOT, uri.replace(settings.STATIC_URL, ""))
+    else:
+        # fallback: return as-is (may be remote)
+        return uri
+
+    if os.path.exists(path):
+        return path
+    return uri
+
+@login_required(login_url='login')
+def download_prediction_pdf(request, pk):
+    # fetch prediction and enforce owner (allow staff)
+    pred = get_object_or_404(Prediction, pk=pk)
+    if pred.user != request.user and not request.user.is_staff:
+        return HttpResponse('Forbidden', status=403)
+
+    context = {'prediction': pred, 'user': request.user}
+    html = render_to_string('reports/prediction_report.html', context)
+
+    result = io.BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=result, encoding='utf-8', link_callback=_link_callback)
+    if pisa_status.err:
+        return HttpResponse('Error generating PDF', status=500)
+
+    filename = f"prediction_{pred.pk}.pdf"
+    response = HttpResponse(result.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
 
 @login_required(login_url='login')
 def dashboard(request):
