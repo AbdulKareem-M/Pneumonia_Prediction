@@ -388,6 +388,47 @@
         </div>
       </label>
 
+      <!-- NEW PATIENT NAME FIELD -->
+      <div style="margin-top: 20px;">
+        <label style="font-weight: 600; color: var(--text-primary);">Patient Name</label>
+        <input 
+          type="text" 
+          name="patient_name"
+          class="form-control"
+          placeholder="Enter patient name"
+          required
+          style="
+            width: 100%; 
+            padding: 12px 14px; 
+            border-radius: var(--radius); 
+            border: 2px solid var(--border);
+            background: var(--bg-secondary);
+            margin-top: 6px;
+          "
+        >
+      </div>
+
+      <!-- NEW EMAIL FIELD -->
+      <div style="margin-top: 20px;">
+        <label style="font-weight: 600; color: var(--text-primary);">Patient Email</label>
+        <input 
+          type="email" 
+          name="email"
+          class="form-control"
+          placeholder="Enter email address"
+          required
+          style="
+            width: 100%; 
+            padding: 12px 14px; 
+            border-radius: var(--radius); 
+            border: 2px solid var(--border);
+            background: var(--bg-secondary);
+            margin-top: 6px;
+          "
+        >
+      </div>
+
+
       <div class="actions">
         <button id="submitBtn" type="submit" class="btn-primary" disabled>
           <span>🔍 Analyze Image</span>

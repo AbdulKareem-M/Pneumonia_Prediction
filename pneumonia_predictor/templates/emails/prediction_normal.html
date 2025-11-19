@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+   <title>Your Pneumonia Screening Result – Normal</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7fb; padding: 20px; }
+        .container { background: #ffffff; padding: 25px; border-radius: 8px; 
+                     max-width: 600px; margin: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
+        .header { text-align: center; padding-bottom: 10px; border-bottom: 3px solid #007bff; }
+        .header h2 { color: #007bff; margin: 0; font-size: 26px; }
+        .content { padding: 20px 0; font-size: 16px; line-height: 1.7; color: #333; }
+        .result-box { background: #e8f7e9; padding: 15px; 
+                      border-left: 4px solid #28a745; border-radius: 4px; margin: 15px 0; }
+        .precautions { background: #f0f7ff; padding: 15px; border-radius: 6px; margin-top: 20px; }
+        .precautions ul { margin: 0; padding-left: 20px; }
+        .footer { margin-top: 25px; text-align: center; font-size: 13px; color: #777; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <h2>CityCare Hospital</h2>
+        <p><strong>Pneumonia Screening Report</strong></p>
+    </div>
+
+    <div class="content">
+        <p>Dear <strong>{{ patient_name }}</strong>,</p>
+
+        <p>We are pleased to inform you that your pneumonia screening result is:</p>
+
+        <div class="result-box">
+            <p style="color:#155724;"><strong>Result: NORMAL</strong></p>
+            <p><strong>Confidence Score:</strong> {{ probability|floatformat:2 }}</p>
+        </div>
+
+        <p>While your lungs show no signs of pneumonia, we recommend following these health precautions:</p>
+
+        <div class="precautions">
+            <h4>✔ Recommended Precautions</h4>
+            <ul>
+                <li>Stay hydrated and drink warm fluids regularly.</li>
+                <li>Avoid exposure to cold environments for long periods.</li>
+                <li>Maintain good hand hygiene to prevent infections.</li>
+                <li>Follow a balanced diet rich in Vitamin C.</li>
+                <li>Get enough sleep and reduce stress.</li>
+                <li>Avoid smoking and second-hand smoke.</li>
+            </ul>
+        </div>
+
+        <p>If you develop symptoms such as fever, chest pain, persistent cough, or difficulty breathing, please consult a doctor immediately.</p>
+
+        <p>Thank you for choosing <strong>CityCare Hospital</strong>.</p>
+    </div>
+
+    <div class="footer">© {{ year }} CityCare Hospital • All Rights Reserved</div>
+
+</div>
+</body>
+</html>

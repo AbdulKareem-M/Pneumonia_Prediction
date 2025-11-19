@@ -11,6 +11,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login as auth_login
 from .models import Prediction
 from django.db.models import Count
+from .utils.email_utils import *
 
 # Load model once at startup
 MODEL_PATH = os.path.join(settings.BASE_DIR, 'pneumonia_predictor', 'models', 'pneumonia_model.h5')
@@ -57,6 +58,26 @@ def upload_and_predict(request):
             except Exception as e:
                 # don't break the request on DB errors; log if needed
                 print("Prediction save failed:", e)
+            
+            
+            # ---------------------------------------
+            # SEND HTML EMAIL USING UTILITY FUNCTION
+            # ---------------------------------------
+            try:
+                patient_name = request.POST.get("patient_name", request.user.username)
+                patient_email = request.POST.get("email", request.user.email)
+
+                send_prediction_email(
+                    patient_name=patient_name,
+                    patient_email=patient_email,
+                    label=result['label'],
+                    probability=result['probability']
+                )
+                print("Email sent successfully!")
+            except Exception as e:
+                print("Email sending failed:", e)
+            # ---------------------------------------
+
     else:
         form = UploadImageForm()
 
@@ -64,9 +85,9 @@ def upload_and_predict(request):
 
 @login_required(login_url='login')
 def dashboard(request):
-    total = Prediction.objects.count()
-    pneumonia = Prediction.objects.filter(label='Pneumonia').count()
-    normal = Prediction.objects.filter(label='Normal').count()
+    total = Prediction.objects.filter(user=request.user).count()
+    pneumonia = Prediction.objects.filter(label='Pneumonia', user =request.user).count()
+    normal = Prediction.objects.filter(label='Normal', user = request.user).count()
     # show recent predictions for current user
     recent = Prediction.objects.filter(user=request.user)[:20]
     return render(request, 'dashboard.html', {
@@ -90,3 +111,5 @@ def signup(request):
     else:
         form = UserCreationForm()
     return render(request, 'registration/signup.html', {'form': form})
+
+print()

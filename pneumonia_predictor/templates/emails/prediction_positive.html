@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Your Pneumonia Screening Result – Positive</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #fff5f5; padding: 20px; }
+        .container { background: #ffffff; padding: 25px; border-radius: 8px; 
+                     max-width: 600px; margin: auto; border: 2px solid #dc3545;
+                     box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
+        .header { text-align: center; padding-bottom: 10px; border-bottom: 3px solid #dc3545; }
+        .header h2 { color: #dc3545; margin: 0; font-size: 26px; }
+        .content { padding: 20px 0; font-size: 16px; line-height: 1.7; color: #333; }
+        .result-box { background: #ffe8e8; padding: 15px; 
+                      border-left: 4px solid #dc3545; border-radius: 4px; margin: 15px 0; }
+        .treatment { background: #fff3cd; padding: 15px; border-radius: 6px; margin-top: 20px; }
+        .treatment ul { margin: 0; padding-left: 20px; }
+        .warning { background: #f8d7da; padding: 12px; border-radius: 6px; margin-top: 15px; border-left: 4px solid #721c24; }
+        .footer { margin-top: 25px; text-align: center; font-size: 13px; color: #777; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <h2>CityCare Hospital</h2>
+        <p><strong>Pneumonia Screening Report</strong></p>
+    </div>
+
+    <div class="content">
+        <p>Dear <strong>{{ patient_name }}</strong>,</p>
+
+        <p>Your recent pneumonia screening indicates:</p>
+
+        <div class="result-box">
+            <p style="color:#721c24;"><strong>Result: POSITIVE FOR PNEUMONIA</strong></p>
+            <p><strong>Confidence Score:</strong> {{ probability|floatformat:2 }}</p>
+        </div>
+
+        <div class="warning">
+            <strong>⚠ Important:</strong> This result suggests possible pneumonia.  
+            Please consult a certified doctor for immediate evaluation.
+        </div>
+
+        <div class="treatment">
+            <h4>Recommended Treatment & Next Steps</h4>
+            <ul>
+                <li>Start prescribed antibiotics (if given by your doctor).</li>
+                <li>Take adequate rest and avoid strenuous activities.</li>
+                <li>Use a humidifier or inhale steam to ease breathing.</li>
+                <li>Stay hydrated with warm water or oral rehydration drinks.</li>
+                <li>Avoid smoking and polluted environments.</li>
+                <li>Monitor symptoms: fever, cough, chest pain, or breathing difficulty.</li>
+                <li>Seek emergency care if symptoms worsen.</li>
+            </ul>
+        </div>
+
+        <p>Please book an appointment with our pulmonary specialist for advanced evaluation.</p>
+
+        <p>We are here to support you.  
+        — <strong>CityCare Hospital</strong></p>
+    </div>
+
+    <div class="footer">© {{ year }} CityCare Hospital • Immediate Care Recommended</div>
+
+</div>
+</body>
+</html>
