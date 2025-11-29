@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "default"
+        });
+    </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 550px;
+            margin: auto;
+            padding: 40px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>System Architecture Diagram</h2>
+
+<div class="mermaid">
+%% Minimal, A4-friendly, activity-diagram style
+%% Designed to look different from system architecture diagrams
+%% Very compact vertical flow
+
+%%{init: {
+  "theme": "default",
+  "flowchart": {
+    "htmlLabels": false,
+    "curve": "linear",
+    "nodeSpacing": 10,
+    "rankSpacing": 18
+  }
+}}%%
+
+flowchart TD
+
+    A([Clinician Access])
+    B[Authenticate User]
+    C[Upload Patient Data]
+    D[Store X-ray]
+    E[Preprocess]
+    F[Run Model]
+    G[Extract Probability]
+
+    H{Result}
+    H1[Normal]
+    H2[Pneumonia]
+
+    I[Save Record]
+    J[Send Email]
+    K[Generate PDF]
+    L[Show to Clinician]
+    M([End])
+
+    A --> B --> C --> D --> E --> F --> G --> H
+    H -->|Normal| H1 --> I
+    H -->|Pneumonia| H2 --> I
+    I --> J --> K --> L --> M
+
+
+</div>
+
+</body>
+</html>

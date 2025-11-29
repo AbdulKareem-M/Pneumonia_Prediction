@@ -125,12 +125,11 @@ graph LR
 
     subgraph -
         UC1[Clinician Login]
-        UC2[Upload Patient X-ray]
-        UC3[Enter Patient Details]
-        UC4[View Prediction]
-        UC5[Download PDF Report]
-        UC6[Dashboard of Predictions]
-        UC7[Receives Email Result]
+        UC2[Upload Patient Details]
+        UC3[View Prediction]
+        UC4[Download PDF Report]
+        UC5[Dashboard of Predictions]
+        UC6[Receives Email Result]
     end
 
     Clinician[Clinician User] --> UC1
@@ -138,9 +137,7 @@ graph LR
     Clinician --> UC3
     Clinician --> UC4
     Clinician --> UC5
-    Clinician --> UC6
-
-    Patient[Patient] --> UC7
+    Patient[Patient] --> UC6
 
 
 

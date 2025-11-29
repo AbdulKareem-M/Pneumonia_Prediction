@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "default"
+        });
+    </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 550px;
+            margin: auto;
+            padding: 40px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>System Architecture Diagram</h2>
+
+<div class="mermaid">
+%%{init: {"flowchart": {"useMaxWidth": true}} }%%
+
+flowchart TD
+
+    Clinician[Clinician]:::actor
+    Patient[Patient]:::actor
+
+    UI[Frontend]:::frontend
+    API[Backend Service]:::backend
+    Model[ML Model - CNN]:::ml
+
+    DB[(Database)]:::storage
+    Media[(Media Storage)]:::storage
+
+    Email[Email Service]:::notify
+
+    Clinician --> UI
+    UI --> API
+    API --> Model
+    Model --> API
+
+    API --> DB
+    API --> Media
+    API --> Email --> Patient
+
+    UI --> Clinician
+
+    %% COLORS
+    classDef actor fill:#e0e0e0,stroke:#555,stroke-width:1.2px;
+    classDef frontend fill:#cfe2ff,stroke:#3a78c0,stroke-width:1.2px;
+    classDef backend fill:#d1e7dd,stroke:#2d7a46,stroke-width:1.2px;
+    classDef ml fill:#e8d1ff,stroke:#7a3db8,stroke-width:1.2px;
+    classDef storage fill:#ffe5cc,stroke:#c27a27,stroke-width:1.2px;
+    classDef notify fill:#ccf2f2,stroke:#1b7a7a,stroke-width:1.2px;
+
+</div>
+
+</body>
+</html>
