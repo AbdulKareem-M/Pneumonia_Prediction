@@ -37,8 +37,6 @@ def predict_pneumonia(img_path):
 
 @login_required(login_url='login')
 def upload_and_predict(request):
-    result = None
-    image_url = None
     if request.method == "POST":
         form = UploadImageForm(request.POST, request.FILES)
         if form.is_valid():
@@ -48,41 +46,40 @@ def upload_and_predict(request):
             with open(img_path, 'wb+') as f:
                 for chunk in img.chunks():
                     f.write(chunk)
+
             result = predict_pneumonia(img_path)
             image_url = settings.MEDIA_URL + img.name
 
-            # collect patient info (optional fields from form)
             patient_name = request.POST.get("patient_name") or request.user.get_full_name() or request.user.username
             patient_email = request.POST.get("email") or request.user.email or ''
 
-            # persist prediction for dashboard (now with patient fields)
-            try:
-                Prediction.objects.create(
-                    user=request.user,
-                    image_name=img.name,
-                    patient_name=patient_name,
-                    patient_email=patient_email,
-                    label=result['label'],
-                    probability=result['probability']
-                )
-            except Exception as e:
-                print("Prediction save failed:", e)
+            Prediction.objects.create(
+                user=request.user,
+                image_name=img.name,
+                patient_name=patient_name,
+                patient_email=patient_email,
+                label=result['label'],
+                probability=result['probability']
+            )
 
-            # attempt to send email (existing)
-            try:
-                send_prediction_email(
-                    patient_name=patient_name,
-                    patient_email=patient_email,
-                    label=result['label'],
-                    probability=result['probability']
-                )
-                print("Email sent successfully!")
-            except Exception as e:
-                print("Email sending failed:", e)
+            # send_prediction_email(
+            #     patient_name=patient_name,
+            #     patient_email=patient_email,
+            #     label=result['label'],
+            #     probability=result['probability']
+            # )
+
+            return render(request, 'result.html', {
+                'result': result,
+                'image_url': image_url,
+                'patient_name': patient_name,
+                'patient_email': patient_email
+            })
     else:
         form = UploadImageForm()
 
-    return render(request, 'upload.html', {'form': form, 'result': result, 'image_url': image_url})
+    return render(request, 'upload.html', {'form': form})
+
 
 # new view: download user's predictions as PDF
 @login_required(login_url='login')

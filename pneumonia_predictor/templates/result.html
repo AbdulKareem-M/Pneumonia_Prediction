@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% block title %}Prediction Result — Pneumonia Detector{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Layout */
+.result-section {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.result-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border);
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Header */
+.result-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+}
+
+.result-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius);
+    background: var(--bg-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 8px 16px rgba(102,126,234,0.3);
+}
+
+.result-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.result-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Prediction Label */
+.prediction-result {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.prediction-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 18px;
+    width: fit-content;
+}
+
+.prediction-label.normal {
+    background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(5,150,105,0.1) 100%);
+    color: var(--success);
+    border: 2px solid rgba(16,185,129,0.3);
+}
+
+.prediction-label.pneumonia {
+    background: linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(220,38,38,0.1) 100%);
+    color: var(--danger);
+    border: 2px solid rgba(239,68,68,0.3);
+}
+
+/* Confidence Meter */
+.confidence-meter {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.confidence-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.confidence-bar-container {
+    width: 100%;
+    height: 12px;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.confidence-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--bg-gradient);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.confidence-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.confidence-value {
+    font-size: 32px;
+    font-weight: 800;
+    background: var(--bg-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-top: 8px;
+}
+
+/* Info box */
+.info-box {
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 24px;
+    border-left: 4px solid var(--primary);
+}
+
+.info-box-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.info-box-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-state-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius);
+    background: var(--bg-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    box-shadow: 0 8px 16px rgba(102,126,234,0.3);
+}
+
+.empty-state-text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.empty-state-text strong {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.empty-state-text span {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="result-section">
+    <div class="result-card">
+        {% if result %}
+        <div class="result-header">
+            <div class="result-icon">🎯</div>
+            <div>
+                <div class="result-title">Prediction Result</div>
+                <div class="result-subtitle">AI Model Analysis</div>
+            </div>
+        </div>
+
+        <div class="prediction-result">
+            <div>
+                <div class="prediction-label {% if result.label == 'Normal' %}normal{% else %}pneumonia{% endif %}">
+                    {% if result.label == 'Normal' %}
+                        ✓ Normal
+                    {% else %}
+                        ⚠ Pneumonia Detected
+                    {% endif %}
+                </div>
+                <p style="margin-top:12px; font-size:14px; color:var(--text-secondary);">
+                    Model confidence: <strong>{{ result.probability|floatformat:2 }}</strong>
+                    <br>
+                    <small>(0 = Pneumonia, 1 = Normal)</small>
+                </p>
+            </div>
+
+            <div class="confidence-meter">
+                <div class="confidence-label">
+                    <span>Confidence Level</span>
+                    <span id="confidencePercent">0%</span>
+                </div>
+                <div class="confidence-bar-container">
+                    <div class="confidence-bar" id="confidenceBar"></div>
+                </div>
+                <div class="confidence-value" id="confidenceValue">0</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <div class="info-box-title">⚠️ Important Notice</div>
+            <div class="info-box-text">
+                This tool is for educational and research purposes only. 
+                It is not a medical device and should not be used for clinical diagnosis. 
+                Always consult with qualified healthcare professionals for medical advice.
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">⚡</div>
+            <div class="empty-state-text">
+                <strong>Ready to Analyze</strong>
+                <span>Upload a chest X-ray image and click "Analyze Image" to get started with AI-powered pneumonia detection.</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    {% if result %}
+    const confidenceBar = document.getElementById('confidenceBar');
+    const confidenceValue = document.getElementById('confidenceValue');
+    const confidencePercent = document.getElementById('confidencePercent');
+
+    let probability = {{ result.probability }}; // 0 to 1
+    // Invert for Pneumonia confidence
+    let isNormal = "{{ result.label }}" === "Normal";
+    let confidence = isNormal ? probability : 1 - probability;
+    const targetPercentage = Math.round(confidence * 100);
+
+    // Animate width
+    confidenceBar.style.width = '0%';
+    setTimeout(() => {
+        confidenceBar.style.transition = 'width 1s ease-in-out';
+        confidenceBar.style.width = targetPercentage + '%';
+    }, 100);
+
+    // Animate percentage number
+    let current = 0;
+    const step = targetPercentage / 20; // 20 frames
+    const interval = setInterval(() => {
+        current += step;
+        if (current >= targetPercentage) {
+            current = targetPercentage;
+            clearInterval(interval);
+        }
+        confidencePercent.textContent = Math.round(current) + '%';
+        confidenceValue.textContent = current.toFixed(2);
+    }, 50);
+    {% endif %}
+});
+</script>
+{% endblock %}
