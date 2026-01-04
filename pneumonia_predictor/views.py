@@ -246,5 +246,5 @@ def complete_registration(request, pending_id):
     return render(request, "registration/complete_registration.html")
 
 
-
+#test
 print()
