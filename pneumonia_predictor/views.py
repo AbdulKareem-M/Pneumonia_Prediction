@@ -16,6 +16,13 @@ import os
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from xhtml2pdf import pisa
+from django.contrib.auth.models import User
+from .models import PendingUser
+import random
+from django.contrib.auth.hashers import make_password
+from django.contrib import messages
+
+
 
 # Load model once at startup
 MODEL_PATH = os.path.join(settings.BASE_DIR, 'pneumonia_predictor', 'models', 'pneumonia_model.h5')
@@ -62,12 +69,12 @@ def upload_and_predict(request):
                 probability=result['probability']
             )
 
-            # send_prediction_email(
-            #     patient_name=patient_name,
-            #     patient_email=patient_email,
-            #     label=result['label'],
-            #     probability=result['probability']
-            # )
+            send_prediction_email(
+                patient_name=patient_name,
+                patient_email=patient_email,
+                label=result['label'],
+                probability=result['probability']
+            )
 
             return render(request, 'result.html', {
                 'result': result,
@@ -153,18 +160,91 @@ def dashboard(request):
     })
 
 def signup(request):
-    """
-    Simple user registration using Django's UserCreationForm.
-    Logs the user in on successful registration and redirects to the app.
-    """
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            auth_login(request, user)
-            return redirect('upload_and_predict')
-    else:
-        form = UserCreationForm()
-    return render(request, 'registration/signup.html', {'form': form})
+        email = request.POST.get('email')
+        username = request.POST.get('username')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+
+        # Validate passwords
+        if password1 != password2:
+            messages.error(request, "Passwords do not match.")
+            return redirect('signup')
+
+        # Unique email check
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already registered.")
+            return redirect('signup')
+
+        if PendingUser.objects.filter(email=email).exists():
+            messages.error(request, "You have a pending registration. Complete it.")
+            return redirect('signup')
+
+        # Generate OTP
+        otp = str(random.randint(100000, 999999))
+
+        pending = PendingUser.objects.create(
+            email=email,
+            username=username,
+            password=make_password(password1),
+            otp=otp
+        )
+
+        # SEND OTP EMAIL -- FIXED
+        send_otp_email(username, email, otp)
+
+        # REDIRECT PROPERLY
+        return redirect("complete_registration", pending_id=pending.id)
+
+    return render(request, "registration/signup.html")
+
+
+from django.contrib.auth import login as auth_login
+
+def complete_registration(request, pending_id):
+    pending = get_object_or_404(PendingUser, id=pending_id)
+
+    if request.method == "POST":
+        uid = request.POST.get("uid")
+        phone = request.POST.get("phone")
+        otp = request.POST.get("otp")
+
+        # validations
+        if len(uid) != 16:
+            messages.error(request, "UID must be 16 digits.")
+            return redirect(request.path)
+
+        if len(phone) != 10:
+            messages.error(request, "Phone must be 10 digits.")
+            return redirect(request.path)
+
+        if otp != pending.otp:
+            messages.error(request, "Invalid OTP.")
+            return redirect(request.path)
+
+        # Unique in PendingUser
+        if PendingUser.objects.filter(uid_number=uid).exclude(id=pending_id).exists():
+            messages.error(request, "UID already exists.")
+            return redirect(request.path)
+
+        if PendingUser.objects.filter(phone_number=phone).exclude(id=pending_id).exists():
+            messages.error(request, "Phone number already exists.")
+            return redirect(request.path)
+
+        # Create actual user
+        user = User.objects.create(
+            username=pending.username,
+            email=pending.email,
+            password=pending.password,
+        )
+
+        pending.delete()
+        auth_login(request, user)
+
+        return redirect("registration_success")
+
+    return render(request, "registration/complete_registration.html")
+
+
 
 print()

@@ -19,13 +19,19 @@ from django.urls import path, include
 from pneumonia_predictor import views
 from django.conf import settings
 from django.conf.urls.static import static
-
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.upload_and_predict, name='upload_and_predict'),
     path('dashboard/', views.dashboard, name='dashboard'),
-    path('accounts/signup/', views.signup, name='signup'),
+    path("signup/", views.signup, name="signup"),
+    path("complete-registration/<int:pending_id>/", 
+         views.complete_registration, 
+         name="complete_registration"),
+    path("registration-success/", 
+     TemplateView.as_view(template_name="registration/registration_success.html"), 
+     name="registration_success"),
     path('accounts/', include('django.contrib.auth.urls')),  # login/logout/password
     path('reports/download/', views.download_report, name='download_report'),
     path('reports/<int:pk>/download/', views.download_prediction_pdf, name='download_prediction_pdf'),

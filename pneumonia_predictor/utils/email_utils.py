@@ -1,6 +1,6 @@
 # detector_app/utils.py
 
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.template.loader import render_to_string
 from django.conf import settings
 from datetime import datetime
@@ -43,3 +43,14 @@ def send_prediction_email(patient_name, patient_email, label, probability):
     # Send
     email.send()
     return True
+
+
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
+
+def send_otp_email(username, email, otp):
+    subject = "Your OTP for Registration"
+    message = f"Hello {username}, your OTP for registration is {otp}."
+    email_obj = EmailMessage(subject, message, to=[email])
+    email_obj.send()
+

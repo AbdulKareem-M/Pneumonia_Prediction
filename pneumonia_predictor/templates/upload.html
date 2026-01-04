@@ -5,52 +5,136 @@
 <style>
   .upload-container {
     display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 32px;
+    grid-template-columns: 1fr 420px;
+    gap: 40px;
     align-items: start;
   }
 
   .upload-section {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 28px;
   }
 
   .section-header {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
   }
 
   .section-header h1 {
-    font-size: 32px;
-    font-weight: 800;
+    font-size: 36px;
+    font-weight: 900;
     color: var(--text-primary);
-    margin-bottom: 8px;
-    background: var(--bg-gradient);
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    letter-spacing: -0.5px;
   }
 
   .section-header p {
     color: var(--text-secondary);
-    font-size: 16px;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  .upload-area {
+    position: relative;
+    width: 100%;
   }
 
   .dropzone {
     border: 3px dashed var(--border);
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-    border-radius: var(--radius-lg);
-    padding: 48px 32px;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+    border-radius: 20px;
+    padding: 56px 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 24px;
     text-align: center;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+  }
+
+  .dropzone.hidden {
+    display: none;
+  }
+
+  .image-preview-area {
+    display: none;
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+    border: 3px solid var(--border);
+    background: var(--bg-secondary);
+  }
+
+  .image-preview-area.show {
+    display: block;
+    animation: zoomIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes zoomIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .preview-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 600px;
+    object-fit: contain;
+  }
+
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.7) 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .image-preview-area:hover .image-overlay {
+    opacity: 1;
+  }
+
+  .change-image-btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+  }
+
+  .change-image-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    background: white;
   }
 
   .dropzone::before {
@@ -60,8 +144,8 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transition: left 0.5s;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.15), transparent);
+    transition: left 0.6s;
   }
 
   .dropzone:hover::before {
@@ -70,92 +154,150 @@
 
   .dropzone:hover {
     border-color: var(--primary);
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-xl);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
   }
 
   .dropzone.dragover {
     border-color: var(--primary);
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.18) 100%);
     transform: scale(1.02);
-    box-shadow: var(--shadow-xl);
+    box-shadow: 0 24px 48px rgba(102, 126, 234, 0.25);
   }
 
   .dropzone-icon {
-    width: 80px;
-    height: 80px;
-    border-radius: var(--radius);
-    background: var(--bg-gradient);
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 40px;
-    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    font-size: 48px;
+    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
     animation: float 3s ease-in-out infinite;
   }
 
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(2deg); }
   }
 
   .dropzone-text {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .dropzone-text strong {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 800;
     color: var(--text-primary);
+    letter-spacing: -0.3px;
   }
 
   .dropzone-text span {
-    font-size: 14px;
+    font-size: 15px;
     color: var(--text-secondary);
+    line-height: 1.5;
   }
 
   .file-input {
     display: none;
   }
 
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .form-group label {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-group label::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: var(--bg-secondary);
+    font-size: 15px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--bg-primary);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  }
+
   .actions {
     display: flex;
-    gap: 12px;
+    gap: 14px;
     flex-wrap: wrap;
   }
 
-  .preview-container {
-    margin-top: 24px;
-    display: none;
+  .btn-primary, .btn-secondary {
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
 
-  .preview-container.show {
-    display: block;
-    animation: slideUp 0.3s ease-out;
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
   }
 
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
   }
 
-  .preview-image {
-    width: 100%;
-    max-width: 500px;
-    height: auto;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    border: 2px solid var(--border);
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
     background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 2px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--bg-primary);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  .preview-container {
+    display: none;
   }
 
   .result-section {
@@ -165,103 +307,107 @@
 
   .result-card {
     background: var(--bg-primary);
-    border-radius: var(--radius-lg);
-    padding: 28px;
-    box-shadow: var(--shadow-xl);
-    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+    border: 2px solid var(--border);
   }
 
   .result-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 24px;
-    padding-bottom: 20px;
+    gap: 18px;
+    margin-bottom: 28px;
+    padding-bottom: 24px;
     border-bottom: 2px solid var(--border);
   }
 
   .result-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius);
-    background: var(--bg-gradient);
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
-    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    font-size: 32px;
+    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.35);
   }
 
   .result-title {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 800;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
   }
 
   .result-subtitle {
     font-size: 14px;
     color: var(--text-secondary);
+    font-weight: 500;
   }
 
   .prediction-result {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
   }
 
   .prediction-label {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    border-radius: var(--radius-sm);
-    font-weight: 700;
-    font-size: 18px;
+    gap: 10px;
+    padding: 16px 24px;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 19px;
     width: fit-content;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
   }
 
   .prediction-label.normal {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
-    color: var(--success);
-    border: 2px solid rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+    color: #059669;
+    border: 2px solid rgba(16, 185, 129, 0.4);
   }
 
   .prediction-label.pneumonia {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
-    color: var(--danger);
-    border: 2px solid rgba(239, 68, 68, 0.3);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.15) 100%);
+    color: #dc2626;
+    border: 2px solid rgba(239, 68, 68, 0.4);
   }
 
   .confidence-meter {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
   }
 
   .confidence-label {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 14px;
+    font-size: 15px;
     color: var(--text-secondary);
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .confidence-bar-container {
     width: 100%;
-    height: 12px;
+    height: 14px;
     background: var(--bg-secondary);
-    border-radius: 6px;
+    border-radius: 8px;
     overflow: hidden;
     position: relative;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .confidence-bar {
     height: 100%;
-    background: var(--bg-gradient);
-    border-radius: 6px;
-    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
   }
@@ -273,7 +419,7 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
     animation: shimmer 2s infinite;
   }
 
@@ -283,72 +429,84 @@
   }
 
   .confidence-value {
-    font-size: 32px;
-    font-weight: 800;
-    background: var(--bg-gradient);
+    font-size: 36px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-top: 8px;
+    letter-spacing: -1px;
   }
 
   .info-box {
-    background: var(--bg-secondary);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-top: 24px;
-    border-left: 4px solid var(--primary);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+    border-radius: 14px;
+    padding: 24px;
+    margin-top: 28px;
+    border-left: 5px solid #f59e0b;
   }
 
   .info-box-title {
-    font-weight: 700;
+    font-weight: 800;
     font-size: 16px;
     color: var(--text-primary);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .info-box-text {
     font-size: 14px;
     color: var(--text-secondary);
-    line-height: 1.6;
+    line-height: 1.7;
   }
 
   .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
     text-align: center;
-    padding: 40px 20px;
+    padding: 48px 24px;
   }
 
   .empty-state-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: var(--radius);
-    background: var(--bg-gradient);
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
-    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+    font-size: 40px;
+    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.35);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
   }
 
   .empty-state-text {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .empty-state-text strong {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 800;
     color: var(--text-primary);
+    letter-spacing: -0.3px;
   }
 
   .empty-state-text span {
-    font-size: 14px;
+    font-size: 15px;
     color: var(--text-secondary);
+    line-height: 1.6;
   }
 
   @media (max-width: 968px) {
@@ -362,7 +520,16 @@
     }
 
     .section-header h1 {
-      font-size: 24px;
+      font-size: 28px;
+    }
+
+    .dropzone {
+      padding: 40px 24px;
+    }
+
+    .dropzone-icon {
+      width: 80px;
+      height: 80px;
     }
   }
 </style>
@@ -373,76 +540,72 @@
   <section class="upload-section">
     <div class="section-header">
       <h1>Upload Chest X-ray</h1>
-      <p>Upload a chest X-ray image to analyze for pneumonia detection</p>
+      <p>Upload a chest X-ray image to analyze for pneumonia detection using our advanced AI model</p>
     </div>
 
     <form id="uploadForm" method="post" enctype="multipart/form-data">
       {% csrf_token %}
       
-      <label for="fileInput" class="dropzone" id="dropzone" tabindex="0">
+      <div class="upload-area" id="uploadArea">
         <input id="fileInput" name="image" type="file" accept="image/*" class="file-input" required>
-        <div class="dropzone-icon">📤</div>
-        <div class="dropzone-text">
-          <strong>Click or drag X-ray image here</strong>
-          <span>Supports PNG, JPG, JPEG formats • Best results with frontal chest X-rays</span>
+        
+        <div class="dropzone" id="dropzone" tabindex="0">
+          <div class="dropzone-icon">📤</div>
+          <div class="dropzone-text">
+            <strong>Click or drag X-ray image here</strong>
+            <span>Supports PNG, JPG, JPEG formats • Best results with frontal chest X-rays</span>
+          </div>
         </div>
-      </label>
 
-      <!-- NEW PATIENT NAME FIELD -->
-      <div style="margin-top: 20px;">
-        <label style="font-weight: 600; color: var(--text-primary);">Patient Name</label>
+        <div class="image-preview-area" id="imagePreviewArea">
+          <img id="previewImg" src="" alt="Uploaded X-ray" class="preview-image">
+          <div class="image-overlay">
+            <button type="button" class="change-image-btn" id="changeImageBtn">
+              🔄 Change Image
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Patient Name</label>
         <input 
           type="text" 
           name="patient_name"
           class="form-control"
           placeholder="Enter patient name"
           required
-          style="
-            width: 100%; 
-            padding: 12px 14px; 
-            border-radius: var(--radius); 
-            border: 2px solid var(--border);
-            background: var(--bg-secondary);
-            margin-top: 6px;
-          "
         >
       </div>
 
-      <!-- NEW EMAIL FIELD -->
-      <div style="margin-top: 20px;">
-        <label style="font-weight: 600; color: var(--text-primary);">Patient Email</label>
+      <div class="form-group">
+        <label>Patient Email</label>
         <input 
           type="email" 
           name="email"
           class="form-control"
           placeholder="Enter email address"
           required
-          style="
-            width: 100%; 
-            padding: 12px 14px; 
-            border-radius: var(--radius); 
-            border: 2px solid var(--border);
-            background: var(--bg-secondary);
-            margin-top: 6px;
-          "
         >
       </div>
-
 
       <div class="actions">
         <button id="submitBtn" type="submit" class="btn-primary" disabled>
           <span>🔍 Analyze Image</span>
         </button>
-        <label for="fileInput" class="btn-secondary" style="cursor: pointer; text-align: center; display: inline-block;">
-          Choose File
+        <label for="fileInput" class="btn-secondary" style="cursor: pointer;">
+          📁 Choose File
         </label>
         {% if image_url %}
           <a class="btn-secondary" href="{{ image_url }}" target="_blank" style="text-decoration: none;">
-            View Last Upload
+            👁️ View Last Upload
           </a>
         {% endif %}
       </div>
 
+      <div class="preview-container" id="previewContainer">
+        <img id="previewImg" src="" alt="Preview" class="preview-image">
+      </div>
       <div class="preview-container" id="previewContainer">
         <img id="previewImg" src="" alt="Preview" class="preview-image">
       </div>
@@ -469,7 +632,7 @@
                 ⚠ Pneumonia Detected
               {% endif %}
             </div>
-            <p style="margin-top: 12px; font-size: 14px; color: var(--text-secondary);">
+            <p style="margin-top: 14px; font-size: 14px; color: var(--text-secondary); line-height: 1.6;">
               Model confidence: <strong>{{ result.probability|floatformat:2 }}</strong>
               <br>
               <small>(0 = Pneumonia, 1 = Normal)</small>
@@ -514,15 +677,17 @@
 <script>
   const fileInput = document.getElementById('fileInput');
   const dropzone = document.getElementById('dropzone');
+  const imagePreviewArea = document.getElementById('imagePreviewArea');
   const previewImg = document.getElementById('previewImg');
-  const previewContainer = document.getElementById('previewContainer');
+  const changeImageBtn = document.getElementById('changeImageBtn');
   const submitBtn = document.getElementById('submitBtn');
   const confidenceBar = document.getElementById('confidenceBar');
   const confidencePercent = document.getElementById('confidencePercent');
 
   function showPreview(file) {
     if (!file) {
-      previewContainer.classList.remove('show');
+      dropzone.classList.remove('hidden');
+      imagePreviewArea.classList.remove('show');
       previewImg.src = '';
       submitBtn.disabled = true;
       return;
@@ -531,7 +696,8 @@
     const reader = new FileReader();
     reader.onload = (e) => {
       previewImg.src = e.target.result;
-      previewContainer.classList.add('show');
+      dropzone.classList.add('hidden');
+      imagePreviewArea.classList.add('show');
       submitBtn.disabled = false;
     };
     reader.readAsDataURL(file);
@@ -539,6 +705,16 @@
 
   fileInput.addEventListener('change', (e) => {
     showPreview(e.target.files[0]);
+  });
+
+  // Change image button
+  changeImageBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  // Make dropzone clickable
+  dropzone.addEventListener('click', () => {
+    fileInput.click();
   });
 
   // Drag and drop functionality
@@ -572,7 +748,6 @@
     }
   }, false);
 
-  // Animate confidence bar on page load
   document.addEventListener('DOMContentLoaded', () => {
     {% if result %}
       const probability = {{ result.probability }};
@@ -590,7 +765,6 @@
     {% endif %}
   });
 
-  // Form submission loading state
   document.getElementById('uploadForm').addEventListener('submit', function() {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span>⏳ Processing...</span>';
